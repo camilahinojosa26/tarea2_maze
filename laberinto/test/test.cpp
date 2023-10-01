@@ -71,7 +71,7 @@ int main(int nargs, char** vargs) {
 int main(int nargs, char** vargs) {
     // Resto de tu código
     // Crear un laberinto
-    maze::Maze laberinto(13, 13);
+    maze::Maze laberinto(21, 21);
 
     // Imprimir el laberinto
     std::cout << "Laberinto:" << std::endl;
@@ -80,19 +80,12 @@ int main(int nargs, char** vargs) {
     // Llamar a la función solve_pila para encontrar el camino
     std::vector<std::pair<int, int>> solutionPila = laberinto.solve_pila(0, 0, laberinto.getHeight() - 1, laberinto.getWidth() - 1);
 
-    // Llamar a la función solve_cola para encontrar el camino
-    //std::vector<std::pair<int, int>> solutionCola = laberinto.solve_cola(0, 0, laberinto.getHeight() - 1, laberinto.getWidth() - 1);
-
     // Marcar y mostrar el camino en el laberinto
     laberinto.markPath(solutionPila); // Marcar el camino de la pila
-    //laberinto.markPath(solutionCola); // Marcar el camino de la cola
 
     // Imprimir el laberinto con el camino marcado
     std::cout << "Laberinto con Solución (Pila):" << std::endl;
     laberinto.print();
-/*
-    std::cout << "\nLaberinto con Solución (Cola):" << std::endl;
-    laberinto.print();
-*/
+
     return 0;
 }

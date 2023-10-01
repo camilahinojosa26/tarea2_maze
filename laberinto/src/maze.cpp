@@ -96,6 +96,7 @@ void Maze::visit(int i, int j) {
 
 void Maze::print() {
     char LIMIT = '=';
+    std::cout << "Laberinto:" << std::endl;
     std::cout << " Maze ( " << height << " x " << width << " ) " << std::endl;
     std::cout << " ";
     for (int j = 0; j < width; j++) {
@@ -107,7 +108,7 @@ void Maze::print() {
         std::cout << "|";
         for (int j = 0; j < width; j++) {
             if (mazeData[i][j] == EMPTY) {
-                std::cout << EMPTY;
+                std::cout << '-'; // Use 'x' to mark the path
             } else {
                 std::cout << WALL;
             }
@@ -122,6 +123,7 @@ void Maze::print() {
     std::cout << " ";
     std::cout << std::endl;
 }
+
 
 // Implement the getter methods
 const std::vector<std::vector<uchar>>& Maze::getMazeData() const {
@@ -144,10 +146,10 @@ std::vector<std::pair<int, int>> Maze::solve_pila(int f1, int c1, int f2, int c2
     std::stack<std::pair<int, int>> pila;
     pila.push(std::make_pair(f1, c1));
 
-    std::vector<std::pair<int, int>> path; // Store the path
+    std::vector<std::vector<int>> visited(height, std::vector<int>(width, 0));
+    visited[f1][c1] = 1;
 
-    // Create a copy of the maze to work on without modifying the original
-    std::vector<std::vector<uchar>> mazeCopy = mazeData;
+    std::vector<std::pair<int, int>> path; // Store the path
 
     while (!pila.empty()) {
         std::pair<int, int> coord = pila.top();
@@ -155,8 +157,16 @@ std::vector<std::pair<int, int>> Maze::solve_pila(int f1, int c1, int f2, int c2
         int col = coord.second;
 
         if (row == f2 && col == c2) {
-            // We reached the destination, add the step to the path
-            path.push_back(std::make_pair(row, col));
+            // We reached the destination, reconstruct the path
+            while (!(row == f1 && col == c1)) {
+                path.push_back(std::make_pair(row, col));
+                int next_row = row - dir[visited[row][col]];
+                int next_col = col - dir[(visited[row][col] + 1) % 4];
+                row = next_row;
+                col = next_col;
+            }
+            path.push_back(std::make_pair(f1, c1));
+            std::reverse(path.begin(), path.end()); // Reverse the path to start from (f1, c1)
             break;
         }
 
@@ -165,10 +175,10 @@ std::vector<std::pair<int, int>> Maze::solve_pila(int f1, int c1, int f2, int c2
             int newRow = row + dir[i];
             int newCol = col + dir[(i + 1) % 4];
 
-            if (inRange(newRow, newCol) && mazeCopy[newRow][newCol] == EMPTY) {
+            if (inRange(newRow, newCol) && mazeData[newRow][newCol] == EMPTY && visited[newRow][newCol] == 0) {
                 pila.push(std::make_pair(newRow, newCol));
+                visited[newRow][newCol] = (i + 2) % 4; // Store the direction to backtrack
                 found = true;
-                mazeCopy[newRow][newCol] = 'x'; // Mark the path in the maze copy
                 break; // Only move in one direction
             }
         }
@@ -179,11 +189,11 @@ std::vector<std::pair<int, int>> Maze::solve_pila(int f1, int c1, int f2, int c2
         }
     }
 
-    // Mark the path in the original maze
-    markPath(path);
-
     return path;
 }
+
+
+
 /*
 std::vector<std::pair<int, int>> Maze::solve_cola(int f1, int c1, int f2, int c2) {
     std::queue<std::pair<int, int>> cola;
@@ -229,9 +239,10 @@ void Maze::markPath(const std::vector<std::pair<int, int>>& path) {
     for (const auto& step : path) {
         int row = step.first;
         int col = step.second;
-        mazeData[row][col] = 'x'; // Mark the path with 'x'
+        mazeData[row][col] = EMPTY; // Mark the path with 'x'
     }
 }
+
 
 
 } // namespace maze
