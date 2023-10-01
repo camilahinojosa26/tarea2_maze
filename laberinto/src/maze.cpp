@@ -136,6 +136,8 @@
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
+#include <stack>
+#include <queue>
 
 namespace maze {
 
@@ -270,6 +272,98 @@ int Maze::getHeight() const {
 
 const std::unordered_map<int, std::vector<int>>& Maze::getAdjacencyList() const {
     return adjacencyList;
+}
+
+std::vector<std::pair<int, int>> Maze::solve_pila(int f1, int c1, int f2, int c2) {
+    std::stack<std::pair<int, int>> pila;
+    std::vector<std::pair<int, int>> solution;
+
+    // Matriz para marcar las celdas visitadas
+    std::vector<std::vector<bool>> visited(height, std::vector<bool>(width, false));
+
+    // Definición de movimientos posibles (arriba, abajo, izquierda, derecha)
+    int dx[4] = {0, 0, -1, 1};
+    int dy[4] = {-1, 1, 0, 0};
+
+    pila.push(std::make_pair(f1, c1));
+    visited[f1][c1] = true;
+
+    while (!pila.empty()) {
+        std::pair<int, int> current = pila.top();
+        pila.pop();
+
+        // Comprobar si hemos llegado al punto de destino (f2, c2)
+        if (current.first == f2 && current.second == c2) {
+            while (!pila.empty()) {
+                solution.push_back(pila.top());
+                pila.pop();
+            }
+            solution.push_back(current);
+            break;
+        }
+
+        for (int i = 0; i < 4; i++) {
+            int nextRow = current.first + dy[i];
+            int nextCol = current.second + dx[i];
+
+            if (inRange(nextRow, nextCol) && mazeData[nextRow][nextCol] == 0 && !visited[nextRow][nextCol]) {
+                pila.push(std::make_pair(nextRow, nextCol));
+                visited[nextRow][nextCol] = true;
+            }
+        }
+    }
+
+    return solution;
+    }
+
+std::vector<std::pair<int, int>> Maze::solve_cola(int f1, int c1, int f2, int c2) {
+    std::queue<std::pair<int, int>> cola;
+    std::vector<std::pair<int, int>> solution;
+
+    std::vector<std::vector<bool>> visited(height, std::vector<bool>(width, false));
+
+    int dx[4] = {0, 0, -1, 1};
+    int dy[4] = {-1, 1, 0, 0};
+
+    cola.push(std::make_pair(f1, c1));
+    visited[f1][c1] = true;
+
+    while (!cola.empty()) {
+        std::pair<int, int> current = cola.front();
+        cola.pop();
+        if (current.first == f2 && current.second == c2) {
+            // Construir la solución siguiendo el camino desde la matriz de visitados
+            std::pair<int, int> backtrack = current;
+            while (backtrack != std::make_pair(f1, c1)) {
+                solution.push_back(backtrack);
+                int nextRow = backtrack.first;
+                int nextCol = backtrack.second;
+                for (int i = 0; i < 4; i++) {
+                    int newRow = nextRow + dy[i];
+                    int newCol = nextCol + dx[i];
+                    if (inRange(newRow, newCol) && visited[newRow][newCol] && mazeData[newRow][newCol] == 0) {
+                        backtrack = std::make_pair(newRow, newCol);
+                        break;
+                    }
+                }
+            }
+            solution.push_back(std::make_pair(f1, c1));
+            std::reverse(solution.begin(), solution.end());
+            break;
+        }
+
+        for (int i = 0; i < 4; i++) {
+            int nextRow = current.first + dy[i];
+            int nextCol = current.second + dx[i];
+
+            if (inRange(nextRow, nextCol) && mazeData[nextRow][nextCol] == 0 && !visited[nextRow][nextCol]) {
+                cola.push(std::make_pair(nextRow, nextCol));
+                visited[nextRow][nextCol] = true;
+            }
+        }
+    }
+
+    return solution;
 }
 
 } // namespace maze

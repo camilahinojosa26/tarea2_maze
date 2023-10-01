@@ -70,6 +70,8 @@ namespace maze {
         int getWidth() const;
         int getHeight() const;
         const std::unordered_map<int, std::vector<int>>& getAdjacencyList() const;
+        std::vector<std::pair<int, int>> solve_pila(int f1, int c1, int f2, int c2);
+        std::vector<std::pair<int, int>> solve_cola(int f1, int c1, int f2, int c2);
     };
 }
 
